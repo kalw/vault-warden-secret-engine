@@ -1,0 +1,3 @@
+vault-vaultwarden-secret-engine
+dist/
+*.test
