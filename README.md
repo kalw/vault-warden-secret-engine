@@ -5,11 +5,16 @@
 [![Latest release](https://img.shields.io/github/v/release/kalw/vault-warden-secret-engine?sort=semver&logo=github)](https://github.com/kalw/vault-warden-secret-engine/releases/latest)
 [![Go version](https://img.shields.io/github/go-mod/go-version/kalw/vault-warden-secret-engine?logo=go)](go.mod)
 
-**Platforms** — cross-compiled in CI and published each release (`amd64` · `arm64`):
-[![linux](https://img.shields.io/badge/linux-amd64%20%C2%B7%20arm64-FCC624?logo=linux&logoColor=black)](https://github.com/kalw/vault-warden-secret-engine/releases/latest)
-[![macOS](https://img.shields.io/badge/macOS-amd64%20%C2%B7%20arm64-000000?logo=apple&logoColor=white)](https://github.com/kalw/vault-warden-secret-engine/releases/latest)
-[![FreeBSD](https://img.shields.io/badge/FreeBSD-amd64%20%C2%B7%20arm64-AB2B28?logo=freebsd&logoColor=white)](https://github.com/kalw/vault-warden-secret-engine/releases/latest)
-[![OpenBSD](https://img.shields.io/badge/OpenBSD-amd64%20%C2%B7%20arm64-F2CA30?logo=openbsd&logoColor=black)](https://github.com/kalw/vault-warden-secret-engine/releases/latest)
+**Platforms** — cross-compiled in CI:
+
+| OS | amd64 | arm64 |
+|---|---|---|
+| ![linux](https://img.shields.io/badge/linux-FCC624?logo=linux&logoColor=black) | [![](https://img.shields.io/github/actions/workflow/status/kalw/vault-warden-secret-engine/ci.yml?job=Build+linux%2Famd64&label=amd64)](https://github.com/kalw/vault-warden-secret-engine/actions/workflows/ci.yml) | [![](https://img.shields.io/github/actions/workflow/status/kalw/vault-warden-secret-engine/ci.yml?job=Build+linux%2Farm64&label=arm64)](https://github.com/kalw/vault-warden-secret-engine/actions/workflows/ci.yml) |
+| ![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white) | [![](https://img.shields.io/github/actions/workflow/status/kalw/vault-warden-secret-engine/ci.yml?job=Build+darwin%2Famd64&label=amd64)](https://github.com/kalw/vault-warden-secret-engine/actions/workflows/ci.yml) | [![](https://img.shields.io/github/actions/workflow/status/kalw/vault-warden-secret-engine/ci.yml?job=Build+darwin%2Farm64&label=arm64)](https://github.com/kalw/vault-warden-secret-engine/actions/workflows/ci.yml) |
+| ![FreeBSD](https://img.shields.io/badge/FreeBSD-AB2B28?logo=freebsd&logoColor=white) | [![](https://img.shields.io/github/actions/workflow/status/kalw/vault-warden-secret-engine/ci.yml?job=Build+freebsd%2Famd64&label=amd64)](https://github.com/kalw/vault-warden-secret-engine/actions/workflows/ci.yml) | [![](https://img.shields.io/github/actions/workflow/status/kalw/vault-warden-secret-engine/ci.yml?job=Build+freebsd%2Farm64&label=arm64)](https://github.com/kalw/vault-warden-secret-engine/actions/workflows/ci.yml) |
+| ![OpenBSD](https://img.shields.io/badge/OpenBSD-F2CA30?logo=openbsd&logoColor=black) | [![](https://img.shields.io/github/actions/workflow/status/kalw/vault-warden-secret-engine/ci.yml?job=Build+openbsd%2Famd64&label=amd64)](https://github.com/kalw/vault-warden-secret-engine/actions/workflows/ci.yml) | [![](https://img.shields.io/github/actions/workflow/status/kalw/vault-warden-secret-engine/ci.yml?job=Build+openbsd%2Farm64&label=arm64)](https://github.com/kalw/vault-warden-secret-engine/actions/workflows/ci.yml) |
+
+
 
 A HashiCorp Vault secrets engine for [Vaultwarden](https://github.com/dani-garcia/vaultwarden/) and compatible self-hosted password manager servers. It authenticates to your Warden server with an API key, derives the vault encryption keys in-process, and surfaces decrypted vault items through Vault's API — so your applications can pull credentials from Warden using the standard Vault client, ACL policies, and lease model.
 
