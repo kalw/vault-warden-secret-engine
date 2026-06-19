@@ -1,4 +1,4 @@
-module github.com/arcdigital/vault-vaultwarden-secret-engine
+module github.com/arcdigital/vault-warden-secret-engine
 
 go 1.25.7
 

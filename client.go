@@ -1,4 +1,4 @@
-package vaultwardensecrets
+package wardensecrets
 
 import (
 	"bytes"
@@ -12,13 +12,13 @@ import (
 	"time"
 )
 
-type vaultwardenClient struct {
+type wardenClient struct {
 	baseURL    string
 	httpClient *http.Client
 }
 
-func newVaultwardenClient(baseURL string) *vaultwardenClient {
-	return &vaultwardenClient{
+func newWardenClient(baseURL string) *wardenClient {
+	return &wardenClient{
 		baseURL:    strings.TrimRight(baseURL, "/"),
 		httpClient: &http.Client{Timeout: 30 * time.Second},
 	}
@@ -33,7 +33,7 @@ type tokenResponse struct {
 	Description string `json:"error_description"`
 }
 
-// profileResponse mirrors the Vaultwarden /api/accounts/profile response.
+// profileResponse mirrors the Warden /api/accounts/profile response.
 type profileResponse struct {
 	ID             string       `json:"id"`
 	Email          string       `json:"email"`
@@ -52,7 +52,7 @@ type orgProfile struct {
 	Key  string `json:"key"`
 }
 
-// cipherItem mirrors a Vaultwarden cipher from /api/ciphers.
+// cipherItem mirrors a Warden cipher from /api/ciphers.
 type cipherItem struct {
 	ID             string        `json:"id"`
 	OrganizationID *string       `json:"organizationId"`
@@ -123,17 +123,17 @@ type fieldData struct {
 	Type  int     `json:"type"` // 0=text, 1=hidden, 2=boolean, 3=linked
 }
 
-// authenticate obtains a Vaultwarden access token via the client_credentials grant.
+// authenticate obtains a Warden access token via the client_credentials grant.
 // Returns the access token string and its TTL in seconds.
-func (c *vaultwardenClient) authenticate(ctx context.Context, clientID, clientSecret string) (string, int, error) {
+func (c *wardenClient) authenticate(ctx context.Context, clientID, clientSecret string) (string, int, error) {
 	form := url.Values{}
 	form.Set("grant_type", "client_credentials")
 	form.Set("client_id", clientID)
 	form.Set("client_secret", clientSecret)
 	form.Set("scope", "api")
 	form.Set("deviceType", "21")
-	form.Set("deviceIdentifier", "vault-vaultwarden-plugin")
-	form.Set("deviceName", "vault-vaultwarden-plugin")
+	form.Set("deviceIdentifier", "vault-warden-plugin")
+	form.Set("deviceName", "vault-warden-plugin")
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
 		c.baseURL+"/identity/connect/token",
@@ -145,7 +145,7 @@ func (c *vaultwardenClient) authenticate(ctx context.Context, clientID, clientSe
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return "", 0, fmt.Errorf("vaultwarden auth: %w", err)
+		return "", 0, fmt.Errorf("warden auth: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -156,13 +156,13 @@ func (c *vaultwardenClient) authenticate(ctx context.Context, clientID, clientSe
 
 	var tr tokenResponse
 	if err := json.Unmarshal(data, &tr); err != nil {
-		return "", 0, fmt.Errorf("vaultwarden auth: parse response (status %d): %w", resp.StatusCode, err)
+		return "", 0, fmt.Errorf("warden auth: parse response (status %d): %w", resp.StatusCode, err)
 	}
 	if tr.Error != "" {
-		return "", 0, fmt.Errorf("vaultwarden auth: %s: %s", tr.Error, tr.Description)
+		return "", 0, fmt.Errorf("warden auth: %s: %s", tr.Error, tr.Description)
 	}
 	if resp.StatusCode != http.StatusOK || tr.AccessToken == "" {
-		return "", 0, fmt.Errorf("vaultwarden auth: unexpected status %d", resp.StatusCode)
+		return "", 0, fmt.Errorf("warden auth: unexpected status %d", resp.StatusCode)
 	}
 
 	ttl := tr.ExpiresIn
@@ -173,7 +173,7 @@ func (c *vaultwardenClient) authenticate(ctx context.Context, clientID, clientSe
 }
 
 // getProfile fetches the user profile, including KDF parameters and encrypted symmetric key.
-func (c *vaultwardenClient) getProfile(ctx context.Context, token string) (*profileResponse, error) {
+func (c *wardenClient) getProfile(ctx context.Context, token string) (*profileResponse, error) {
 	var profile profileResponse
 	if err := c.apiGet(ctx, token, "/api/accounts/profile", &profile); err != nil {
 		return nil, fmt.Errorf("get profile: %w", err)
@@ -182,7 +182,7 @@ func (c *vaultwardenClient) getProfile(ctx context.Context, token string) (*prof
 }
 
 // listCiphers fetches all ciphers the user has access to.
-func (c *vaultwardenClient) listCiphers(ctx context.Context, token string) ([]cipherItem, error) {
+func (c *wardenClient) listCiphers(ctx context.Context, token string) ([]cipherItem, error) {
 	var result struct {
 		Data   []cipherItem `json:"data"`
 		Object string       `json:"object"`
@@ -194,7 +194,7 @@ func (c *vaultwardenClient) listCiphers(ctx context.Context, token string) ([]ci
 }
 
 // getCipher fetches a single cipher by ID.
-func (c *vaultwardenClient) getCipher(ctx context.Context, token, id string) (*cipherItem, error) {
+func (c *wardenClient) getCipher(ctx context.Context, token, id string) (*cipherItem, error) {
 	var item cipherItem
 	if err := c.apiGet(ctx, token, "/api/ciphers/"+id, &item); err != nil {
 		return nil, fmt.Errorf("get cipher %s: %w", id, err)
@@ -202,7 +202,7 @@ func (c *vaultwardenClient) getCipher(ctx context.Context, token, id string) (*c
 	return &item, nil
 }
 
-func (c *vaultwardenClient) apiGet(ctx context.Context, token, path string, out interface{}) error {
+func (c *wardenClient) apiGet(ctx context.Context, token, path string, out interface{}) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+path, nil)
 	if err != nil {
 		return err
@@ -224,7 +224,7 @@ func (c *vaultwardenClient) apiGet(ctx context.Context, token, path string, out 
 		return fmt.Errorf("not found")
 	}
 	if resp.StatusCode != http.StatusOK {
-		// Try to extract a Bitwarden error message.
+		// Try to extract a vault error message.
 		var errResp struct {
 			Message          string              `json:"message"`
 			Object           string              `json:"object"`

@@ -1,4 +1,4 @@
-package vaultwardensecrets
+package wardensecrets
 
 import (
 	"context"
@@ -12,14 +12,14 @@ import (
 
 var uuidRegex = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
 
-func pathItems(b *vaultwardenBackend) []*framework.Path {
+func pathItems(b *wardenBackend) []*framework.Path {
 	return []*framework.Path{
 		{
 			Pattern: "items/" + framework.GenericNameRegex("id_or_name"),
 			Fields: map[string]*framework.FieldSchema{
 				"id_or_name": {
 					Type:        framework.TypeString,
-					Description: "UUID or name of the Vaultwarden item to retrieve.",
+					Description: "UUID or name of the Warden item to retrieve.",
 					Required:    true,
 				},
 			},
@@ -27,21 +27,21 @@ func pathItems(b *vaultwardenBackend) []*framework.Path {
 				logical.ReadOperation:   &framework.PathOperation{Callback: b.pathItemsRead},
 				logical.UpdateOperation: &framework.PathOperation{Callback: b.pathItemsRead},
 			},
-			HelpSynopsis:    "Read a Vaultwarden item by UUID or name.",
-			HelpDescription: "Returns the decrypted fields of a Vaultwarden vault item. Accepts either a full UUID or a case-insensitive name search.",
+			HelpSynopsis:    "Read a Warden item by UUID or name.",
+			HelpDescription: "Returns the decrypted fields of a Warden vault item. Accepts either a full UUID or a case-insensitive name search.",
 		},
 		{
 			Pattern: "items/?$",
 			Operations: map[logical.Operation]framework.OperationHandler{
 				logical.ListOperation: &framework.PathOperation{Callback: b.pathItemsList},
 			},
-			HelpSynopsis:    "List Vaultwarden item names.",
-			HelpDescription: "Lists the names of all accessible Vaultwarden vault items. Use item UUIDs or names with the items/<id_or_name> path to retrieve credentials.",
+			HelpSynopsis:    "List Warden item names.",
+			HelpDescription: "Lists the names of all accessible Warden vault items. Use item UUIDs or names with the items/<id_or_name> path to retrieve credentials.",
 		},
 	}
 }
 
-func (b *vaultwardenBackend) pathItemsRead(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
+func (b *wardenBackend) pathItemsRead(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
 	idOrName := d.Get("id_or_name").(string)
 
 	token, err := b.getAccessToken(ctx, req.Storage)
@@ -61,7 +61,7 @@ func (b *vaultwardenBackend) pathItemsRead(ctx context.Context, req *logical.Req
 	if cfg == nil {
 		return nil, errNotConfigured
 	}
-	client := newVaultwardenClient(cfg.URL)
+	client := newWardenClient(cfg.URL)
 
 	var item *cipherItem
 
@@ -104,7 +104,7 @@ func (b *vaultwardenBackend) pathItemsRead(ctx context.Context, req *logical.Req
 	return &logical.Response{Data: data}, nil
 }
 
-func (b *vaultwardenBackend) pathItemsList(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
+func (b *wardenBackend) pathItemsList(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
 	token, err := b.getAccessToken(ctx, req.Storage)
 	if err != nil {
 		return nil, err
@@ -122,7 +122,7 @@ func (b *vaultwardenBackend) pathItemsList(ctx context.Context, req *logical.Req
 	if cfg == nil {
 		return nil, errNotConfigured
 	}
-	client := newVaultwardenClient(cfg.URL)
+	client := newWardenClient(cfg.URL)
 
 	items, err := client.listCiphers(ctx, token)
 	if err != nil {

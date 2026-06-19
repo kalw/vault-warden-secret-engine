@@ -1,11 +1,11 @@
 version: 2
 
-project_name: vault-vaultwarden-secret-engine
+project_name: vault-warden-secret-engine
 
 builds:
   - id: plugin
-    main: ./cmd/vault-vaultwarden-secret-engine
-    binary: vault-vaultwarden-secret-engine
+    main: ./cmd/vault-warden-secret-engine
+    binary: vault-warden-secret-engine
     env:
       - CGO_ENABLED=0
     flags:
@@ -60,11 +60,11 @@ changelog:
 release:
   github:
     owner: kalw
-    name: vault-vaultwarden-secret-engine
+    name: vault-warden-secret-engine
   prerelease: auto
   draft: false
   header: |
-    Pre-built `vault-vaultwarden-secret-engine` plugin binaries.
+    Pre-built `vault-warden-secret-engine` plugin binaries.
 
     Download the asset matching your Vault server's OS/arch, verify it against
     `checksums.txt`, then register the SHA-256 with Vault's plugin catalog.

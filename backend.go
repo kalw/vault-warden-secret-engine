@@ -1,4 +1,4 @@
-package vaultwardensecrets
+package wardensecrets
 
 import (
 	"context"
@@ -20,12 +20,12 @@ func Factory(ctx context.Context, conf *logical.BackendConfig) (logical.Backend,
 	return b, nil
 }
 
-type vaultwardenBackend struct {
+type wardenBackend struct {
 	*framework.Backend
 
 	mu sync.Mutex
 
-	// Cached Vaultwarden access token.
+	// Cached Warden access token.
 	accessToken       string
 	accessTokenExpiry time.Time
 
@@ -55,8 +55,8 @@ func (d *derivedKeys) keyForCipher(orgID string) (encKey, macKey []byte) {
 	return d.userEncKey, d.userMacKey
 }
 
-func newBackend() *vaultwardenBackend {
-	b := &vaultwardenBackend{}
+func newBackend() *wardenBackend {
+	b := &wardenBackend{}
 	b.Backend = &framework.Backend{
 		Help:        strings.TrimSpace(backendHelp),
 		BackendType: logical.TypeLogical,
@@ -71,8 +71,8 @@ func newBackend() *vaultwardenBackend {
 	return b
 }
 
-// getAccessToken returns a valid Vaultwarden access token, re-authenticating if needed.
-func (b *vaultwardenBackend) getAccessToken(ctx context.Context, s logical.Storage) (string, error) {
+// getAccessToken returns a valid Warden access token, re-authenticating if needed.
+func (b *wardenBackend) getAccessToken(ctx context.Context, s logical.Storage) (string, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -88,7 +88,7 @@ func (b *vaultwardenBackend) getAccessToken(ctx context.Context, s logical.Stora
 		return "", errNotConfigured
 	}
 
-	client := newVaultwardenClient(cfg.URL)
+	client := newWardenClient(cfg.URL)
 	token, expiresIn, err := client.authenticate(ctx, cfg.ClientID, cfg.ClientSecret)
 	if err != nil {
 		return "", err
@@ -100,7 +100,7 @@ func (b *vaultwardenBackend) getAccessToken(ctx context.Context, s logical.Stora
 }
 
 // getDerivedKeys returns the user's decrypted keys, deriving them on first call.
-func (b *vaultwardenBackend) getDerivedKeys(ctx context.Context, s logical.Storage) (*derivedKeys, error) {
+func (b *wardenBackend) getDerivedKeys(ctx context.Context, s logical.Storage) (*derivedKeys, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -121,7 +121,7 @@ func (b *vaultwardenBackend) getDerivedKeys(ctx context.Context, s logical.Stora
 		return nil, err
 	}
 
-	client := newVaultwardenClient(cfg.URL)
+	client := newWardenClient(cfg.URL)
 	profile, err := client.getProfile(ctx, token)
 	if err != nil {
 		return nil, err
@@ -171,11 +171,11 @@ func (b *vaultwardenBackend) getDerivedKeys(ctx context.Context, s logical.Stora
 }
 
 // getAccessTokenLocked is like getAccessToken but assumes b.mu is already held.
-func (b *vaultwardenBackend) getAccessTokenLocked(ctx context.Context, s logical.Storage, cfg *vaultwardenConfig) (string, error) {
+func (b *wardenBackend) getAccessTokenLocked(ctx context.Context, s logical.Storage, cfg *wardenConfig) (string, error) {
 	if b.accessToken != "" && time.Now().Before(b.accessTokenExpiry) {
 		return b.accessToken, nil
 	}
-	client := newVaultwardenClient(cfg.URL)
+	client := newWardenClient(cfg.URL)
 	token, expiresIn, err := client.authenticate(ctx, cfg.ClientID, cfg.ClientSecret)
 	if err != nil {
 		return "", err
@@ -193,8 +193,8 @@ func derefInt(p *int) int {
 }
 
 const backendHelp = `
-The Vaultwarden secrets engine reads items from a self-hosted Vaultwarden
-(Bitwarden-compatible) vault. Configure it with your Vaultwarden URL, API key
+The Warden secrets engine reads items from a self-hosted Warden
+Configure it with your Warden URL, API key
 (client_id + client_secret), email, and master password. Read from the items/
 endpoint to retrieve decrypted vault items by UUID or name.
 `

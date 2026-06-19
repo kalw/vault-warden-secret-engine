@@ -44,10 +44,10 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: "0"
-        run: go build -o /dev/null ./cmd/vault-vaultwarden-secret-engine
+        run: go build -o /dev/null ./cmd/vault-warden-secret-engine
 
   acceptance:
-    name: Acceptance tests (live Vaultwarden)
+    name: Acceptance tests (live Warden)
     runs-on: ubuntu-latest
     needs: test
     # Never expose secrets to pull requests from forks.
@@ -60,16 +60,16 @@ jobs:
           cache: true
       - name: Acceptance tests
         env:
-          VAULTWARDEN_URL: ${{ secrets.VAULTWARDEN_URL }}
-          VAULTWARDEN_CLIENT_ID: ${{ secrets.VAULTWARDEN_CLIENT_ID }}
-          VAULTWARDEN_CLIENT_SECRET: ${{ secrets.VAULTWARDEN_CLIENT_SECRET }}
-          VAULTWARDEN_EMAIL: ${{ secrets.VAULTWARDEN_EMAIL }}
-          VAULTWARDEN_MASTER_PASSWORD: ${{ secrets.VAULTWARDEN_MASTER_PASSWORD }}
+          WARDEN_URL: ${{ secrets.WARDEN_URL }}
+          WARDEN_CLIENT_ID: ${{ secrets.WARDEN_CLIENT_ID }}
+          WARDEN_CLIENT_SECRET: ${{ secrets.WARDEN_CLIENT_SECRET }}
+          WARDEN_EMAIL: ${{ secrets.WARDEN_EMAIL }}
+          WARDEN_MASTER_PASSWORD: ${{ secrets.WARDEN_MASTER_PASSWORD }}
         run: |
-          if [ -z "$VAULTWARDEN_URL" ] || [ -z "$VAULTWARDEN_CLIENT_ID" ]; then
-            echo "Vaultwarden secrets not configured; skipping live acceptance tests."
-            echo "Add VAULTWARDEN_URL, VAULTWARDEN_CLIENT_ID, VAULTWARDEN_CLIENT_SECRET,"
-            echo "VAULTWARDEN_EMAIL, and VAULTWARDEN_MASTER_PASSWORD repository secrets to enable."
+          if [ -z "$WARDEN_URL" ] || [ -z "$WARDEN_CLIENT_ID" ]; then
+            echo "Warden secrets not configured; skipping live acceptance tests."
+            echo "Add WARDEN_URL, WARDEN_CLIENT_ID, WARDEN_CLIENT_SECRET,"
+            echo "WARDEN_EMAIL, and WARDEN_MASTER_PASSWORD repository secrets to enable."
             exit 0
           fi
           VAULT_ACC=1 go test -run TestAcceptance -v -count=1

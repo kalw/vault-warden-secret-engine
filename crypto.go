@@ -1,4 +1,4 @@
-package vaultwardensecrets
+package wardensecrets
 
 import (
 	"crypto/aes"
@@ -44,7 +44,7 @@ func deriveMasterKey(email, masterPassword string, kdfType, iterations, memory, 
 		if parallelism <= 0 {
 			parallelism = 4
 		}
-		// Argon2id salt is SHA-256(email) per Bitwarden spec.
+		// Argon2id salt is SHA-256(email) per the Warden encryption spec.
 		saltHash := sha256.Sum256(emailNorm)
 		// memory parameter for argon2.IDKey is in KiB; kdfMemory from server is MiB.
 		return argon2.IDKey(password, saltHash[:], uint32(iterations), uint32(memory)*1024, uint8(parallelism), 32), nil
@@ -68,7 +68,7 @@ func stretchMasterKey(masterKey []byte) (encKey, macKey []byte, err error) {
 	return encKey, macKey, nil
 }
 
-// encString holds the parsed components of a Bitwarden EncryptedString.
+// encString holds the parsed components of a vault EncryptedString.
 // Format: "<type>.<iv>|<ciphertext>|<mac>" for AES types, or "<type>.<ciphertext>" for RSA.
 type encString struct {
 	encType int
@@ -183,7 +183,7 @@ func pkcs7Unpad(data []byte) ([]byte, error) {
 	return data[:len(data)-pad], nil
 }
 
-// decryptEncString decrypts a Bitwarden EncryptedString using symmetric keys.
+// decryptEncString decrypts a vault EncryptedString using symmetric keys.
 func decryptEncString(s string, encKey, macKey []byte) ([]byte, error) {
 	e, err := parseEncString(s)
 	if err != nil {

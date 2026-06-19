@@ -1,4 +1,4 @@
-package vaultwardensecrets
+package wardensecrets
 
 import (
 	"context"
@@ -12,42 +12,42 @@ import (
 
 const configStoragePath = "config"
 
-var errNotConfigured = errors.New("vaultwarden backend not configured; write to the config endpoint first")
+var errNotConfigured = errors.New("warden backend not configured; write to the config endpoint first")
 
-type vaultwardenConfig struct {
-	URL            string `json:"vaultwarden_url"`
+type wardenConfig struct {
+	URL            string `json:"url"`
 	ClientID       string `json:"client_id"`
 	ClientSecret   string `json:"client_secret"`
 	Email          string `json:"email"`
 	MasterPassword string `json:"master_password"`
 }
 
-func pathConfig(b *vaultwardenBackend) *framework.Path {
+func pathConfig(b *wardenBackend) *framework.Path {
 	return &framework.Path{
 		Pattern: "config",
 		Fields: map[string]*framework.FieldSchema{
-			"vaultwarden_url": {
+			"url": {
 				Type:         framework.TypeString,
-				Description:  "Base URL of the Vaultwarden instance (e.g. https://vault.example.com). No trailing slash.",
-				DisplayAttrs: &framework.DisplayAttributes{Name: "Vaultwarden URL"},
+				Description:  "Base URL of the Warden instance (e.g. https://vault.example.com). No trailing slash.",
+				DisplayAttrs: &framework.DisplayAttributes{Name: "Warden URL"},
 			},
 			"client_id": {
 				Type:         framework.TypeString,
-				Description:  "API key client ID from Vaultwarden account settings (starts with 'user.').",
+				Description:  "API key client ID from Warden account settings (starts with 'user.').",
 				DisplayAttrs: &framework.DisplayAttributes{Name: "Client ID", Sensitive: true},
 			},
 			"client_secret": {
 				Type:         framework.TypeString,
-				Description:  "API key client secret from Vaultwarden account settings.",
+				Description:  "API key client secret from Warden account settings.",
 				DisplayAttrs: &framework.DisplayAttributes{Name: "Client Secret", Sensitive: true},
 			},
 			"email": {
 				Type:        framework.TypeString,
-				Description: "Email address of the Vaultwarden account. Used as PBKDF2/Argon2 salt for key derivation.",
+				Description: "Email address of the Warden account. Used as PBKDF2/Argon2 salt for key derivation.",
 			},
 			"master_password": {
 				Type:         framework.TypeString,
-				Description:  "Master password of the Vaultwarden account. Used for key derivation to decrypt vault items. Stored sealed in Vault.",
+				Description:  "Master password of the Warden account. Used for key derivation to decrypt vault items. Stored sealed in Vault.",
 				DisplayAttrs: &framework.DisplayAttributes{Name: "Master Password", Sensitive: true},
 			},
 		},
@@ -58,12 +58,12 @@ func pathConfig(b *vaultwardenBackend) *framework.Path {
 			logical.DeleteOperation: &framework.PathOperation{Callback: b.pathConfigDelete},
 		},
 		ExistenceCheck:  b.pathConfigExistenceCheck,
-		HelpSynopsis:    "Configure the Vaultwarden secrets engine.",
-		HelpDescription: "Set the Vaultwarden URL, API key credentials, and master password used to read vault items.",
+		HelpSynopsis:    "Configure the Warden secrets engine.",
+		HelpDescription: "Set the Warden URL, API key credentials, and master password used to read vault items.",
 	}
 }
 
-func (b *vaultwardenBackend) pathConfigExistenceCheck(ctx context.Context, req *logical.Request, d *framework.FieldData) (bool, error) {
+func (b *wardenBackend) pathConfigExistenceCheck(ctx context.Context, req *logical.Request, d *framework.FieldData) (bool, error) {
 	out, err := req.Storage.Get(ctx, configStoragePath)
 	if err != nil {
 		return false, fmt.Errorf("existence check: %w", err)
@@ -71,7 +71,7 @@ func (b *vaultwardenBackend) pathConfigExistenceCheck(ctx context.Context, req *
 	return out != nil, nil
 }
 
-func (b *vaultwardenBackend) pathConfigRead(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
+func (b *wardenBackend) pathConfigRead(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
 	cfg, err := getConfig(ctx, req.Storage)
 	if err != nil {
 		return nil, err
@@ -81,7 +81,7 @@ func (b *vaultwardenBackend) pathConfigRead(ctx context.Context, req *logical.Re
 	}
 	return &logical.Response{
 		Data: map[string]interface{}{
-			"vaultwarden_url": cfg.URL,
+			"url":             cfg.URL,
 			"client_id":       maskSecret(cfg.ClientID),
 			"client_secret":   maskSecret(cfg.ClientSecret),
 			"email":           cfg.Email,
@@ -90,7 +90,7 @@ func (b *vaultwardenBackend) pathConfigRead(ctx context.Context, req *logical.Re
 	}, nil
 }
 
-func (b *vaultwardenBackend) pathConfigWrite(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
+func (b *wardenBackend) pathConfigWrite(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
 	cfg, err := getConfig(ctx, req.Storage)
 	if err != nil {
 		return nil, err
@@ -100,10 +100,10 @@ func (b *vaultwardenBackend) pathConfigWrite(ctx context.Context, req *logical.R
 		if !create {
 			return nil, errors.New("config not found during update")
 		}
-		cfg = &vaultwardenConfig{}
+		cfg = &wardenConfig{}
 	}
 
-	if v, ok := d.GetOk("vaultwarden_url"); ok {
+	if v, ok := d.GetOk("url"); ok {
 		cfg.URL = strings.TrimRight(v.(string), "/")
 	}
 	if v, ok := d.GetOk("client_id"); ok {
@@ -120,7 +120,7 @@ func (b *vaultwardenBackend) pathConfigWrite(ctx context.Context, req *logical.R
 	}
 
 	if cfg.URL == "" || cfg.ClientID == "" || cfg.ClientSecret == "" || cfg.Email == "" || cfg.MasterPassword == "" {
-		return logical.ErrorResponse("all fields are required: vaultwarden_url, client_id, client_secret, email, master_password"), nil
+		return logical.ErrorResponse("all fields are required: url, client_id, client_secret, email, master_password"), nil
 	}
 
 	entry, err := logical.StorageEntryJSON(configStoragePath, cfg)
@@ -140,7 +140,7 @@ func (b *vaultwardenBackend) pathConfigWrite(ctx context.Context, req *logical.R
 	return nil, nil
 }
 
-func (b *vaultwardenBackend) pathConfigDelete(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
+func (b *wardenBackend) pathConfigDelete(ctx context.Context, req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
 	b.mu.Lock()
 	b.accessToken = ""
 	b.keys = nil
@@ -148,7 +148,7 @@ func (b *vaultwardenBackend) pathConfigDelete(ctx context.Context, req *logical.
 	return nil, req.Storage.Delete(ctx, configStoragePath)
 }
 
-func getConfig(ctx context.Context, s logical.Storage) (*vaultwardenConfig, error) {
+func getConfig(ctx context.Context, s logical.Storage) (*wardenConfig, error) {
 	entry, err := s.Get(ctx, configStoragePath)
 	if err != nil {
 		return nil, err
@@ -156,7 +156,7 @@ func getConfig(ctx context.Context, s logical.Storage) (*vaultwardenConfig, erro
 	if entry == nil {
 		return nil, nil
 	}
-	var cfg vaultwardenConfig
+	var cfg wardenConfig
 	if err := entry.DecodeJSON(&cfg); err != nil {
 		return nil, fmt.Errorf("decode config: %w", err)
 	}
