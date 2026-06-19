@@ -27,18 +27,18 @@ func pathConfig(b *vaultwardenBackend) *framework.Path {
 		Pattern: "config",
 		Fields: map[string]*framework.FieldSchema{
 			"vaultwarden_url": {
-				Type:        framework.TypeString,
-				Description: "Base URL of the Vaultwarden instance (e.g. https://vault.example.com). No trailing slash.",
+				Type:         framework.TypeString,
+				Description:  "Base URL of the Vaultwarden instance (e.g. https://vault.example.com). No trailing slash.",
 				DisplayAttrs: &framework.DisplayAttributes{Name: "Vaultwarden URL"},
 			},
 			"client_id": {
-				Type:        framework.TypeString,
-				Description: "API key client ID from Vaultwarden account settings (starts with 'user.').",
+				Type:         framework.TypeString,
+				Description:  "API key client ID from Vaultwarden account settings (starts with 'user.').",
 				DisplayAttrs: &framework.DisplayAttributes{Name: "Client ID", Sensitive: true},
 			},
 			"client_secret": {
-				Type:        framework.TypeString,
-				Description: "API key client secret from Vaultwarden account settings.",
+				Type:         framework.TypeString,
+				Description:  "API key client secret from Vaultwarden account settings.",
 				DisplayAttrs: &framework.DisplayAttributes{Name: "Client Secret", Sensitive: true},
 			},
 			"email": {
@@ -46,8 +46,8 @@ func pathConfig(b *vaultwardenBackend) *framework.Path {
 				Description: "Email address of the Vaultwarden account. Used as PBKDF2/Argon2 salt for key derivation.",
 			},
 			"master_password": {
-				Type:        framework.TypeString,
-				Description: "Master password of the Vaultwarden account. Used for key derivation to decrypt vault items. Stored sealed in Vault.",
+				Type:         framework.TypeString,
+				Description:  "Master password of the Vaultwarden account. Used for key derivation to decrypt vault items. Stored sealed in Vault.",
 				DisplayAttrs: &framework.DisplayAttributes{Name: "Master Password", Sensitive: true},
 			},
 		},

@@ -54,21 +54,21 @@ type orgProfile struct {
 
 // cipherItem mirrors a Vaultwarden cipher from /api/ciphers.
 type cipherItem struct {
-	ID             string         `json:"id"`
-	OrganizationID *string        `json:"organizationId"`
-	FolderID       *string        `json:"folderId"`
-	Type           int            `json:"type"`
-	Name           string         `json:"name"`
-	Notes          *string        `json:"notes"`
-	Key            *string        `json:"key"`
-	Login          *loginData     `json:"login"`
-	Card           *cardData      `json:"card"`
-	Identity       *identityData  `json:"identity"`
-	SecureNote     *secureNote    `json:"secureNote"`
-	Fields         []fieldData    `json:"fields"`
-	RevisionDate   string         `json:"revisionDate"`
-	CreationDate   string         `json:"creationDate"`
-	DeletedDate    *string        `json:"deletedDate"`
+	ID             string        `json:"id"`
+	OrganizationID *string       `json:"organizationId"`
+	FolderID       *string       `json:"folderId"`
+	Type           int           `json:"type"`
+	Name           string        `json:"name"`
+	Notes          *string       `json:"notes"`
+	Key            *string       `json:"key"`
+	Login          *loginData    `json:"login"`
+	Card           *cardData     `json:"card"`
+	Identity       *identityData `json:"identity"`
+	SecureNote     *secureNote   `json:"secureNote"`
+	Fields         []fieldData   `json:"fields"`
+	RevisionDate   string        `json:"revisionDate"`
+	CreationDate   string        `json:"creationDate"`
+	DeletedDate    *string       `json:"deletedDate"`
 }
 
 type loginData struct {
@@ -226,8 +226,8 @@ func (c *vaultwardenClient) apiGet(ctx context.Context, token, path string, out 
 	if resp.StatusCode != http.StatusOK {
 		// Try to extract a Bitwarden error message.
 		var errResp struct {
-			Message    string `json:"message"`
-			Object     string `json:"object"`
+			Message          string              `json:"message"`
+			Object           string              `json:"object"`
 			ValidationErrors map[string][]string `json:"validationErrors"`
 		}
 		if json.Unmarshal(data, &errResp) == nil && errResp.Message != "" {
